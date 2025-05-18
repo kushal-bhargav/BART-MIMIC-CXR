@@ -483,7 +483,8 @@ def main():
     )
 
     # Metric
-    metric = load_metric("rouge")
+    from evaluate import load
+    metric = load("rouge")
 
     def postprocess_text(preds, labels):
         preds = [pred.strip() for pred in preds]
