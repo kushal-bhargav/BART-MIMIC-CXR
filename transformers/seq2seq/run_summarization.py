@@ -26,7 +26,9 @@ from typing import Optional
 
 import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
-from datasets import load_dataset, load_metric
+from datasets import load_dataset#, load_metric
+from evaluate import load
+metric = load("rouge")
 
 import transformers
 from filelock import FileLock
