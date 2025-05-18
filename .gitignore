@@ -1,5 +1,4 @@
 # Directory to hold MIMIC-CXR data
-data/
 results/
 tmp/
 
