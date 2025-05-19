@@ -520,13 +520,21 @@ def main():
         result = {k: round(v, 4) for k, v in result.items()}
         return result
 
+#     import os
+# import glob
+# import shutil
+
     def delete_old_checkpoints(output_dir, keep_latest=1):
         """Delete older checkpoints, keeping only the latest 'keep_latest' ones."""
         checkpoints = sorted(glob.glob(f"{output_dir}/checkpoint-*"), key=os.path.getctime)
+        
         if len(checkpoints) > keep_latest:
-            for checkpoint in checkpoints[:-keep_latest]:  # Keep only the latest checkpoint(s)
-                os.system(f"rm -rf {checkpoint}")
-                print(f"Deleted old checkpoint: {checkpoint}")
+            for checkpoint in checkpoints[:-keep_latest]:  # Delete all but the latest checkpoint(s)
+                try:
+                    shutil.rmtree(checkpoint)  # Forcefully remove the directory and its contents
+                    print(f"Deleted old checkpoint: {checkpoint}")
+                except Exception as e:
+                    print(f"Failed to delete {checkpoint}: {e}")
 
     # Initialize trainer
     trainer = Seq2SeqTrainer(
@@ -551,18 +559,18 @@ def main():
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         trainer.save_model()  # Saves the tokenizer too for easy upload
 
-    # **Delete old checkpoints after saving the new one**
-    delete_old_checkpoints(training_args.output_dir)
+        # **Delete old checkpoints after saving the new one**
+        delete_old_checkpoints(training_args.output_dir)
 
-    metrics = train_result.metrics
-    max_train_samples = (
-        data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
-    )
-    metrics["train_samples"] = min(max_train_samples, len(train_dataset))
+        metrics = train_result.metrics
+        max_train_samples = (
+            data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
+        )
+        metrics["train_samples"] = min(max_train_samples, len(train_dataset))
 
-    trainer.log_metrics("train", metrics)
-    trainer.save_metrics("train", metrics)
-    trainer.save_state()
+        trainer.log_metrics("train", metrics)
+        trainer.save_metrics("train", metrics)
+        trainer.save_state()
     # Initialize our Trainer
     # trainer = Seq2SeqTrainer(
     #     model=model,
