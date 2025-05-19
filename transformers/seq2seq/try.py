@@ -23,10 +23,14 @@ import os
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
+import os
+import glob
 
 import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
-from datasets import load_dataset, load_metric
+from datasets import load_dataset#, load_metric
+from evaluate import load
+metric = load("rouge")
 
 import transformers
 from filelock import FileLock
@@ -481,7 +485,8 @@ def main():
     )
 
     # Metric
-    metric = load_metric("rouge")
+    from evaluate import load
+    metric = load("rouge")
 
     def postprocess_text(preds, labels):
         preds = [pred.strip() for pred in preds]
@@ -515,7 +520,147 @@ def main():
         result = {k: round(v, 4) for k, v in result.items()}
         return result
 
-    # Initialize our Trainer
+#     import os
+# import glob
+# import shutil
+
+    # def delete_old_checkpoints(output_dir, keep_latest=1):
+    #     """Delete older checkpoints, keeping only the latest 'keep_latest' ones."""
+    #     checkpoints = sorted(glob.glob(f"{output_dir}/checkpoint-*"), key=os.path.getctime)
+        
+    #     if len(checkpoints) > keep_latest:
+    #         for checkpoint in checkpoints[:-keep_latest]:  # Delete all but the latest checkpoint(s)
+    #             try:
+    #                 shutil.rmtree(checkpoint)  # Forcefully remove the directory and its contents
+    #                 print(f"Deleted old checkpoint: {checkpoint}")
+    #             except Exception as e:
+    #                 print(f"Failed to delete {checkpoint}: {e}")
+
+    # # Initialize trainer
+    # trainer = Seq2SeqTrainer(
+    #     model=model,
+    #     args=training_args,
+    #     train_dataset=train_dataset if training_args.do_train else None,
+    #     eval_dataset=eval_dataset if training_args.do_eval else None,
+    #     tokenizer=tokenizer,
+    #     data_collator=data_collator,
+    #     compute_metrics=compute_metrics if training_args.predict_with_generate else None,
+    # )
+
+    # # Training
+    # if training_args.do_train:
+    #     if last_checkpoint is not None:
+    #         checkpoint = last_checkpoint
+    #     elif os.path.isdir(model_args.model_name_or_path):
+    #         checkpoint = model_args.model_name_or_path
+    #     else:
+    #         checkpoint = None
+
+    #     train_result = trainer.train(resume_from_checkpoint=checkpoint)
+    #     trainer.save_model()  # Saves the tokenizer too for easy upload
+
+    #     # **Delete old checkpoints after saving the new one**
+    #     delete_old_checkpoints(training_args.output_dir)
+
+    #     metrics = train_result.metrics
+    #     max_train_samples = (
+    #         data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
+    #     )
+    #     metrics["train_samples"] = min(max_train_samples, len(train_dataset))
+
+    #     trainer.log_metrics("train", metrics)
+    #     trainer.save_metrics("train", metrics)
+    #     trainer.save_state()
+    # # Initialize our Trainer
+    # # trainer = Seq2SeqTrainer(
+    # #     model=model,
+    # #     args=training_args,
+    # #     train_dataset=train_dataset if training_args.do_train else None,
+    # #     eval_dataset=eval_dataset if training_args.do_eval else None,
+    # #     tokenizer=tokenizer,
+    # #     data_collator=data_collator,
+    # #     compute_metrics=compute_metrics if training_args.predict_with_generate else None,
+    # # )
+
+    # # # Training
+    # # if training_args.do_train:
+    # #     if last_checkpoint is not None:
+    # #         checkpoint = last_checkpoint
+    # #     elif os.path.isdir(model_args.model_name_or_path):
+    # #         checkpoint = model_args.model_name_or_path
+    # #     else:
+    # #         checkpoint = None
+    # #     train_result = trainer.train(resume_from_checkpoint=checkpoint)
+    # #     trainer.save_model()  # Saves the tokenizer too for easy upload
+
+    # #     metrics = train_result.metrics
+    # #     max_train_samples = (
+    # #         data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
+    # #     )
+    # #     metrics["train_samples"] = min(max_train_samples, len(train_dataset))
+
+    # #     trainer.log_metrics("train", metrics)
+    # #     trainer.save_metrics("train", metrics)
+    # #     trainer.save_state()
+
+    # # Evaluation
+    # results = {}
+    # if training_args.do_eval:
+    #     logger.info("*** Evaluate ***")
+
+    #     metrics = trainer.evaluate(
+    #         max_length=data_args.val_max_target_length, num_beams=data_args.num_beams, metric_key_prefix="eval"
+    #     )
+    #     max_val_samples = data_args.max_val_samples if data_args.max_val_samples is not None else len(eval_dataset)
+    #     metrics["eval_samples"] = min(max_val_samples, len(eval_dataset))
+
+    #     trainer.log_metrics("eval", metrics)
+    #     trainer.save_metrics("eval", metrics)
+
+    # if training_args.do_predict:
+    #     logger.info("*** Test ***")
+
+    #     test_results = trainer.predict(
+    #         test_dataset,
+    #         metric_key_prefix="test",
+    #         max_length=data_args.val_max_target_length,
+    #         num_beams=data_args.num_beams,
+    #     )
+    #     metrics = test_results.metrics
+    #     max_test_samples = data_args.max_test_samples if data_args.max_test_samples is not None else len(test_dataset)
+    #     metrics["test_samples"] = min(max_test_samples, len(test_dataset))
+
+    #     trainer.log_metrics("test", metrics)
+    #     trainer.save_metrics("test", metrics)
+
+    #     if trainer.is_world_process_zero():
+    #         if training_args.predict_with_generate:
+    #             test_preds = tokenizer.batch_decode(
+    #                 test_results.predictions, skip_special_tokens=True, clean_up_tokenization_spaces=True
+    #             )
+    #             test_preds = [pred.strip() for pred in test_preds]
+    #             output_test_preds_file = os.path.join(training_args.output_dir, "test_generations.txt")
+    #             with open(output_test_preds_file, "w") as writer:
+    #                 writer.write("\n".join(test_preds))
+
+    # return results
+# import os
+# import glob
+# import shutil
+
+    def delete_old_checkpoints(output_dir, keep_latest=1):
+        """Delete older checkpoints, keeping only the latest 'keep_latest' ones."""
+        checkpoints = sorted(glob.glob(f"{output_dir}/checkpoint-*"), key=os.path.getctime)
+        
+        if len(checkpoints) > keep_latest:
+            for checkpoint in checkpoints[:-keep_latest]:  # Delete all but the latest checkpoint(s)
+                try:
+                    shutil.rmtree(checkpoint)  # Forcefully remove the directory and its contents
+                    print(f"Deleted old checkpoint: {checkpoint}")
+                except Exception as e:
+                    print(f"Failed to delete {checkpoint}: {e}")
+
+    # Initialize trainer
     trainer = Seq2SeqTrainer(
         model=model,
         args=training_args,
@@ -534,9 +679,10 @@ def main():
             checkpoint = model_args.model_name_or_path
         else:
             checkpoint = None
-        train_result = trainer.train(resume_from_checkpoint=checkpoint)
-        trainer.save_model()  # Saves the tokenizer too for easy upload
 
+        train_result = trainer.train(resume_from_checkpoint=checkpoint)
+        # **Delete old checkpoints after training completes**
+        delete_old_checkpoints(training_args.output_dir)
         metrics = train_result.metrics
         max_train_samples = (
             data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
